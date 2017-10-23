@@ -5,6 +5,7 @@ int main() {
 		printf("%d\n",len);
 	};
 	CXXCURL::Get("www.example.com", func);
+	CXXCURL::Post("www.example.com", "123",func);
 	while(true) {
 		sleep(1);
 	}

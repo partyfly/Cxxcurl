@@ -1,15 +1,16 @@
 #include "Cxxcurl.h"
 #include <unistd.h>
 #include <assert.h>
-using namespace std;
 
 namespace CXXCURL {
+using namespace std;
 
-mutex mtx;
+recursive_mutex mtx;
+atomic_flag working = ATOMIC_FLAG_INIT;
 
 void CurlThread(CURLM* curlm) {
 	int still_running = 1;
-	unique_lock<mutex> lk(mtx, std::defer_lock);
+	unique_lock<recursive_mutex> lk(mtx, std::defer_lock);
 	do {
 		struct timeval timeout;
 		long timel = -1;
@@ -56,7 +57,6 @@ void CurlThread(CURLM* curlm) {
 		struct CURLMsg* m;
 		while(m = curl_multi_info_read(curlm, &msgq)) {
 			if (m->msg == CURLMSG_DONE) {
-				void (*func)(char* ptr, size_t size, void* userFunc);
 				ContextBase* ctxBase;
 				curl_easy_getinfo(m->easy_handle, CURLINFO_PRIVATE, &ctxBase);
 				(*ctxBase->typeFunc_)(ctxBase);
